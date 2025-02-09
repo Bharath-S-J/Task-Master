@@ -1,6 +1,6 @@
 # Task Master - React Todo App
 
-Task Master is a modern **React-based Todo Application** with **Firebase authentication**. It allows users to securely manage tasks while ensuring seamless authentication, email verification, and password recovery.
+Task Master is a modern **React-based Todo Application** with **Firebase authentication**. It enables users to efficiently manage tasks while ensuring secure authentication, email verification, and password recovery.
 
 ## 🚀 Features
 - 🔐 **Authentication** (Email/Password, OAuth with Google)
@@ -10,11 +10,13 @@ Task Master is a modern **React-based Todo Application** with **Firebase authent
 - 🔑 **Forgot Password & Reset Feature**
 - 🔒 **Protected Routes** for authorized users
 - 🎨 **Minimal & Responsive UI**
+- ⚡ **Fast Performance** with Vite
+- 🌙 **Dark Mode Support** (if applicable)
 
 ## 🛠 Tech Stack
 - **Frontend:** React, TypeScript, React Router DOM
 - **Authentication & Backend:** Firebase (Firestore, Authentication)
-- **Styling:** CSS
+- **Styling:** CSS, Tailwind (if applicable)
 - **Development Tools:** ESLint, Git, Vite
 
 ## 📂 Project Structure
@@ -58,10 +60,17 @@ npm run dev
 3. Get `firebaseConfig` from Firebase and update `firebase.ts`
 
 ## 🌍 Hosted Application
-[Live Demo](<hosted-link>)
+[Live Demo](https://task-master-jade-beta.vercel.app/)
 
-## 📬 Contact
-For queries, reach out via:
-- **GitHub**: [GitHub](https://github.com/Bharath-S-J)
-- **LinkedIn**: [LinkedIn](www.linkedin.com/in/bharath-s-j-56a734206)
-- **Portfolio**: *To be added later*
+## 📞 Contact
+
+You can connect with me through the following platforms:
+
+- **GitHub**: [Bharath S J](https://github.com/Bharath-S-J)  
+  Explore my repositories and projects.
+
+- **LinkedIn**: [Bharath S J](https://www.linkedin.com/in/bharath-s-j-56a734206)  
+  Let's connect and discuss potential opportunities.
+
+- **Portfolio**: [Portfolio Website](https://portfolio-bharathsj.vercel.app)  
+  Check out my work and projects.
