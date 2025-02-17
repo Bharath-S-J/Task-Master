@@ -11,7 +11,6 @@ Task Master is a modern **React-based Todo Application** with **Firebase authent
 - 🔒 **Protected Routes** for authorized users
 - 🎨 **Minimal & Responsive UI**
 - ⚡ **Fast Performance** with Vite
-- 🌙 **Dark Mode Support** (if applicable)
 
 ## 🛠 Tech Stack
 - **Frontend:** React, TypeScript, React Router DOM
@@ -69,8 +68,8 @@ You can connect with me through the following platforms:
 - **GitHub**: [Bharath S J](https://github.com/Bharath-S-J)  
   Explore my repositories and projects.
 
-- **LinkedIn**: [Bharath S J](https://www.linkedin.com/in/bharath-s-j-56a734206)  
+- **LinkedIn**: [Bharath S J](https://www.linkedin.com/in/bharathsj)  
   Let's connect and discuss potential opportunities.
 
-- **Portfolio**: [Portfolio Website](https://portfolio-bharathsj.vercel.app)  
+- **Portfolio**: [Portfolio Website](https://bharathsjweb.vercel.app/)  
   Check out my work and projects.
