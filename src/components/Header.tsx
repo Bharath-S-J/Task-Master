@@ -2,7 +2,7 @@ import React from 'react';
 import { LogOut, User } from 'lucide-react';
 
 interface HeaderProps {
-  userName: string | null;
+  userName: string | null | undefined;
   onLogout: () => void;
 }
 
