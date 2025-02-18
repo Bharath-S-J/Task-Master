@@ -19,15 +19,6 @@ const app = initializeApp(firebaseConfig);
 // Initialize authentication
 export const auth = getAuth(app);
 
-// Set authentication persistence to LOCAL (session will persist across devices and tabs)
-setPersistence(auth, browserLocalPersistence)
-  .then(() => {
-    console.log('Authentication persistence set to LOCAL.');
-  })
-  .catch((error) => {
-    console.error('Error setting persistence:', error);
-  });
-
 // Initialize Google authentication provider
 export const googleProvider = new GoogleAuthProvider();
 
