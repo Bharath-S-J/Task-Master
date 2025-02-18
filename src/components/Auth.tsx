@@ -8,7 +8,7 @@ import {
   sendEmailVerification,
   updateProfile 
 } from 'firebase/auth';
-import { Chrome} from 'lucide-react';
+import { Chrome } from 'lucide-react';
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
