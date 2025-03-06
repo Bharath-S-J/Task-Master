@@ -15,7 +15,7 @@ Task Master is a modern **React-based Todo Application** with **Firebase authent
 ## 🛠 Tech Stack
 - **Frontend:** React, TypeScript, React Router DOM
 - **Authentication & Backend:** Firebase (Firestore, Authentication)
-- **Styling:** CSS, Tailwind (if applicable)
+- **Styling:** CSS
 - **Development Tools:** ESLint, Git, Vite
 
 ## 📂 Project Structure
