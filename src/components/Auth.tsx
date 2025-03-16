@@ -34,7 +34,15 @@ const Auth = () => {
       }
 
       if (isLogin) {
-        await signInWithEmailAndPassword(auth, email, password);
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        const user = userCredential.user;
+      
+        if (!user.emailVerified) {
+          setError('Please verify your email before logging in.');
+          await auth.signOut(); // Log out the unverified user
+          return;
+        }
+      
         navigate('/todos');
       } else {
         if (!name.trim()) {
