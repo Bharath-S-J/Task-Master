@@ -19,6 +19,7 @@ const TodoList = () => {
     fetchTodos();
   }, []);
 
+
   const fetchTodos = async () => {
     if (!auth.currentUser) return;
     
@@ -39,6 +40,8 @@ const TodoList = () => {
       console.error('Error fetching todos:', error);
     }
   };
+
+  setInterval(fetchTodos, 2000);
 
   const addTodo = async (e: React.FormEvent) => {
     e.preventDefault();
