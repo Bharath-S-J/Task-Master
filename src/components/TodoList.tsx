@@ -41,7 +41,7 @@ const TodoList = () => {
     }
   };
 
-  setInterval(fetchTodos, 2000);
+  setInterval(fetchTodos, 5000);
 
   const addTodo = async (e: React.FormEvent) => {
     e.preventDefault();
