@@ -61,15 +61,3 @@ npm run dev
 ## 🌍 Hosted Application
 [Live Demo](https://task-master-jade-beta.vercel.app/)
 
-## 📞 Contact
-
-You can connect with me through the following platforms:
-
-- **GitHub**: [Bharath S J](https://github.com/Bharath-S-J)  
-  Explore my repositories and projects.
-
-- **LinkedIn**: [Bharath S J](https://www.linkedin.com/in/bharathsj)  
-  Let's connect and discuss potential opportunities.
-
-- **Portfolio**: [Portfolio Website](https://bharathsjweb.vercel.app/)  
-  Check out my work and projects.
