@@ -2,11 +2,11 @@ export interface Todo {
   id: string;
   title: string;
   description: string;
-  completed: boolean;
-  partiallyCompleted: boolean;
+  status: 'not_started' | 'in_progress' | 'completed';
   createdAt: Date;
   userId: string;
 }
+
 
 export interface User {
   uid: string;

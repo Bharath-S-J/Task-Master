@@ -1,68 +1,127 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { collection, addDoc, query, where, getDocs, deleteDoc, doc, updateDoc } from 'firebase/firestore';
-import { db, auth } from '../firebase';
-import { Todo } from '../types';
-import { Edit3, Trash2, CheckCircle, Save, X } from 'lucide-react';
-import Header from './Header';
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import {
+  collection,
+  addDoc,
+  query,
+  where,
+  getDocs,
+  deleteDoc,
+  doc,
+  updateDoc,
+  onSnapshot,
+} from "firebase/firestore";
+import { db, auth } from "../firebase";
+import { Todo } from "../types";
+import { Edit3, Trash2, CheckCircle, Save, X } from "lucide-react";
+import Header from "./Header";
 
 const TodoList = () => {
   const [todos, setTodos] = useState<Todo[]>([]);
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
   const [editingTodo, setEditingTodo] = useState<string | null>(null);
-  const [editTitle, setEditTitle] = useState('');
-  const [editDescription, setEditDescription] = useState('');
+  const [editTitle, setEditTitle] = useState("");
+  const [editDescription, setEditDescription] = useState("");
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetchTodos();
+    if (!auth.currentUser) return;
+
+    const q = query(
+      collection(db, "todos"),
+      where("userId", "==", auth.currentUser.uid)
+    );
+
+    const unsubscribe = onSnapshot(q, (querySnapshot) => {
+      const todosData = querySnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      })) as Todo[];
+
+      setTodos(todosData);
+    });
+
+    return () => unsubscribe(); // cleanup on unmount
   }, []);
 
+  useEffect(() => {
+    const runBatchUpdateOnce = async () => {
+      const alreadyRun = localStorage.getItem("batchUpdateDone");
+      if (alreadyRun) {
+        console.log("Batch update already done, skipping");
+        return;
+      }
+
+      if (!auth.currentUser) return;
+
+      try {
+        const q = query(
+          collection(db, "todos"),
+          where("userId", "==", auth.currentUser.uid)
+        );
+
+        const querySnapshot = await getDocs(q);
+
+        for (const document of querySnapshot.docs) {
+          const data = document.data();
+          if (!data.status) {
+            const todoDocRef = doc(db, "todos", document.id);
+            await updateDoc(todoDocRef, { status: "not_started" });
+            console.log(`Updated todo with id ${document.id}`);
+          }
+        }
+
+        localStorage.setItem("batchUpdateDone", "true");
+        console.log("Batch update completed and flag set");
+      } catch (error) {
+        console.error("Batch update error:", error);
+      }
+    };
+
+    runBatchUpdateOnce();
+  }, []); // run once on mount
 
   const fetchTodos = async () => {
     if (!auth.currentUser) return;
-    
+
     try {
       const q = query(
-        collection(db, 'todos'),
-        where('userId', '==', auth.currentUser.uid)
+        collection(db, "todos"),
+        where("userId", "==", auth.currentUser.uid)
       );
-      
+
       const querySnapshot = await getDocs(q);
-      const todosData = querySnapshot.docs.map(doc => ({
+      const todosData = querySnapshot.docs.map((doc) => ({
         id: doc.id,
-        ...doc.data()
+        ...doc.data(),
       })) as Todo[];
-      
+
       setTodos(todosData);
     } catch (error) {
-      console.error('Error fetching todos:', error);
+      console.error("Error fetching todos:", error);
     }
   };
-
-  setInterval(fetchTodos, 5000);
 
   const addTodo = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim() || !auth.currentUser) return;
 
     try {
-      const todoRef = collection(db, 'todos');
+      const todoRef = collection(db, "todos");
       await addDoc(todoRef, {
         title,
         description,
-        completed: false,
-        partiallyCompleted: false,
+        status: "not_started",
         createdAt: new Date(),
-        userId: auth.currentUser.uid
+        userId: auth.currentUser.uid,
       });
 
-      setTitle('');
-      setDescription('');
+      setTitle("");
+      setDescription("");
       await fetchTodos();
     } catch (error) {
-      console.error('Error adding todo:', error);
+      console.error("Error adding todo:", error);
     }
   };
 
@@ -74,64 +133,78 @@ const TodoList = () => {
 
   const cancelEditing = () => {
     setEditingTodo(null);
-    setEditTitle('');
-    setEditDescription('');
+    setEditTitle("");
+    setEditDescription("");
   };
 
   const saveTodoEdit = async (todoId: string) => {
     if (!auth.currentUser || !editTitle.trim()) return;
 
     try {
-      const todoRef = doc(db, 'todos', todoId);
+      const todoRef = doc(db, "todos", todoId);
       await updateDoc(todoRef, {
         title: editTitle,
-        description: editDescription
+        description: editDescription,
       });
       setEditingTodo(null);
       await fetchTodos();
     } catch (error) {
-      console.error('Error updating todo:', error);
+      console.error("Error updating todo:", error);
     }
   };
 
-  const togglePartialComplete = async (todo: Todo) => {
+  const cycleStatus = async (todo: Todo) => {
     if (!auth.currentUser) return;
-    
+
+    let newStatus: "not_started" | "in_progress" | "completed";
+
+    switch (todo.status) {
+      case "not_started":
+        newStatus = "in_progress";
+        break;
+      case "in_progress":
+        newStatus = "completed";
+        break;
+      case "completed":
+        newStatus = "not_started";
+        break;
+      default:
+        newStatus = "not_started";
+    }
+
     try {
-      const todoRef = doc(db, 'todos', todo.id);
-      await updateDoc(todoRef, {
-        partiallyCompleted: !todo.partiallyCompleted
-      });
+      const todoRef = doc(db, "todos", todo.id);
+      await updateDoc(todoRef, { status: newStatus });
       await fetchTodos();
     } catch (error) {
-      console.error('Error updating todo:', error);
+      console.error("Error updating status:", error);
     }
   };
 
   const deleteTodo = async (id: string) => {
     if (!auth.currentUser) return;
-    
+
     try {
-      await deleteDoc(doc(db, 'todos', id));
+      await deleteDoc(doc(db, "todos", id));
       await fetchTodos();
     } catch (error) {
-      console.error('Error deleting todo:', error);
+      console.error("Error deleting todo:", error);
     }
   };
 
   const handleLogout = async () => {
     try {
       await auth.signOut();
-      navigate('/');
+      navigate("/");
     } catch (error) {
-      console.error('Error signing out:', error);
+      console.error("Error signing out:", error);
     }
   };
 
   return (
     <div className="layout-wrapper">
-      <Header 
-        userName={auth.currentUser?.displayName || auth.currentUser?.email} 
+      <Header
+        userName={auth.currentUser?.displayName || auth.currentUser?.email}
         onLogout={handleLogout}
       />
 
@@ -156,14 +229,18 @@ const TodoList = () => {
               rows={3}
             />
           </div>
-          <button type="submit" className="btn btn-primary">Add Todo</button>
+          <button type="submit" className="btn btn-primary">
+            Add Todo
+          </button>
         </form>
 
         <div className="todo-grid">
           {todos.map((todo) => (
             <div
               key={todo.id}
-              className={`todo-card ${todo.partiallyCompleted ? 'partially-completed' : ''}`}
+              className={`todo-card todo-status-${
+                todo.status || "not_started"
+              }`}
             >
               {editingTodo === todo.id ? (
                 <div className="form-group">
@@ -187,10 +264,7 @@ const TodoList = () => {
                       <Save size={16} />
                       Save
                     </button>
-                    <button
-                      onClick={cancelEditing}
-                      className="btn btn-danger"
-                    >
+                    <button onClick={cancelEditing} className="btn btn-danger">
                       <X size={16} />
                       Cancel
                     </button>
@@ -198,20 +272,25 @@ const TodoList = () => {
                 </div>
               ) : (
                 <>
-                  <h3 className={`todo-title ${todo.partiallyCompleted ? 'completed' : ''}`}>
-                    {todo.title}
-                  </h3>
-                  <p className="todo-description">
-                    {todo.description}
-                  </p>
+                     <h3 className={`todo-title todo-text-status-${todo.status || "not_started"}`}>
+    {todo.title}
+  </h3>
+  <p className={`todo-description todo-text-status-${todo.status || "not_started"}`}>
+    {todo.description}
+  </p>
                   <div className="todo-actions">
                     <button
-                      onClick={() => togglePartialComplete(todo)}
+                      onClick={() => cycleStatus(todo)}
                       className="btn btn-primary"
                     >
                       <CheckCircle size={16} />
-                      Toggle
+                      {todo.status === "completed"
+                        ? "Completed"
+                        : todo.status === "in_progress"
+                        ? "In Progress"
+                        : "Not Started"}
                     </button>
+
                     <button
                       onClick={() => startEditing(todo)}
                       className="btn btn-warning"

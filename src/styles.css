@@ -8,7 +8,7 @@
   --transition-speed: 0.3s;
 }
 
-/* Add these new styles at the beginning of the file */
+
 .app-wrapper {
   display: flex;
   flex-direction: column;
@@ -314,6 +314,41 @@ body {
   background-color: #28a745;
 }
 
+/* Background colors on card */
+.todo-card.todo-status-not_started {
+  background-color: #f9f9f9;
+}
+
+.todo-card.todo-status-in_progress {
+  background-color: #fff8e1;
+}
+
+.todo-card.todo-status-completed {
+  background-color: #e6ffe6;
+}
+
+/* Title text styles */
+.todo-text-status-not_started {
+  color: gray;
+  font-weight: normal;
+  text-decoration: none;
+  opacity: 1;
+}
+
+.todo-text-status-in_progress {
+  color: orange;
+  font-weight: bold;
+  text-decoration: none;
+  opacity: 1;
+}
+
+.todo-text-status-completed {
+  color: green;
+  text-decoration: line-through;
+  opacity: 0.7;
+}
+
+
 /* Auth Styles */
 .auth-container {
   max-width: 400px;
@@ -390,7 +425,7 @@ body {
   animation: shake 0.5s ease-in-out;
 }
 
-/* Update footer styles */
+
 .footer {
   flex-shrink: 0;
   background-color: #1a1a1a;
