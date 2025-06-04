@@ -1,6 +1,6 @@
-# Task Master - React Todo App
+# Task Master - React Task Management Application
 
-**Task Master** is a modern **React-based Todo Application** built with **Firebase authentication** and **real-time Firestore** support. It empowers users to manage their tasks with reminders, status tracking, and audio alerts — all in a secure and responsive interface.
+**Task Master** is a modern **React-based Task Management Application** built with **Firebase authentication** and **real-time Firestore** support. It empowers users to manage their tasks with reminders, status tracking, and audio alerts — all in a secure and responsive interface.
 
 ---
 
