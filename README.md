@@ -1,75 +1,100 @@
 # Task Master - React Todo App
 
-Task Master is a modern **React-based Todo Application** with **Firebase authentication**. It enables users to efficiently manage tasks while ensuring secure authentication, email verification, and password recovery.
+**Task Master** is a modern **React-based Todo Application** built with **Firebase authentication** and **real-time Firestore** support. It empowers users to manage their tasks with reminders, status tracking, and audio alerts — all in a secure and responsive interface.
+
+---
 
 ## 🚀 Features
-- 🔐 **Authentication** (Email/Password, OAuth with Google)
-- ✅ **Task Management** (Add, Edit, Delete, Complete Tasks)
-- 🔄 **Real-time Sync** with Firebase
-- 📩 **Email Verification before Login**
-- 🔑 **Forgot Password & Reset Feature**
-- 🔒 **Protected Routes** for authorized users
-- 🎨 **Minimal & Responsive UI**
-- ⚡ **Fast Performance** with Vite
+
+* 🔐 **Authentication**
+  Email/Password and Google OAuth via Firebase
+
+* 📬 **Email Verification**
+  Users must verify their email before accessing the app
+
+* 🔑 **Password Reset**
+  Forgot password and reset functionality included
+
+* ✅ **Task Management**
+  Add, edit, delete, and mark tasks as not started, in progress, or completed
+
+* ⏰ **Reminder Support**
+  Add optional reminder date/time to any task
+
+* 🔔 **Real-Time Alerts**
+  Automatic alert and audio notification 1 minute before a reminder
+
+* 🔄 **Real-Time Sync**
+  Firestore `onSnapshot` keeps your task list always updated
+
+* 🔒 **Protected Routes**
+  Routes accessible only after authentication
+
+* 🎨 **Minimal & Responsive UI**
+  Clean layout built with custom CSS
+
+* ⚡ **High Performance**
+  Built using Vite and optimized React patterns
+
+---
 
 ## 🛠 Tech Stack
-- **Frontend:** React, TypeScript, React Router DOM
-- **Authentication & Backend:** Firebase (Firestore, Authentication)
-- **Styling:** CSS
-- **Development Tools:** ESLint, Git, Vite
 
-## 📂 Project Structure
-```
-src/
-├── components/
-│   ├── Auth.tsx
-│   ├── TodoList.tsx
-│   ├── LandingPage.tsx
-│   ├── NotFound.tsx
-│   ├── ProtectedRoute.tsx
-│   ├── Footer.tsx
-│   └── ForgotPassword.tsx
-├── hooks/
-│   └── useAuth.ts
-├── App.tsx
-├── firebase.ts
-└── styles.css
-```
+* **Frontend**: React, TypeScript, React Router DOM
+* **Authentication & Backend**: Firebase (Authentication, Firestore)
+* **Styling**: CSS
+* **Tooling**: ESLint, Prettier, Vite, Git
+
+
+---
 
 ## 🏗 Installation & Setup
+
 ### 1️⃣ Clone the Repository
+
 ```bash
 git clone <repository-url>
 cd task-master
 ```
 
 ### 2️⃣ Install Dependencies
+
 ```bash
 npm install
 ```
 
 ### 3️⃣ Run the Development Server
+
 ```bash
 npm run dev
 ```
 
+---
+
 ## ⚙️ Firebase Setup
-1. Create a Firebase project & enable Authentication (Email/Password, Google OAuth)
-2. Create a Firestore database (if required)
-3. Get `firebaseConfig` from Firebase and update `firebase.ts`
 
-## 🌍 Hosted Application
-[Live Demo](https://task-master-jade-beta.vercel.app/)
+1. Create a Firebase project
+2. Enable:
 
-## 📞 Contact
+   * **Authentication** → Email/Password + Google Sign-In
+   * **Firestore Database**
+3. Go to project settings → Copy `firebaseConfig`
+4. Paste into your local `firebase.ts`
 
-You can connect with me through the following platforms:
+```ts
+// firebase.ts
+export const firebaseConfig = {
+  apiKey: "...",
+  authDomain: "...",
+  projectId: "...",
+  ...
+};
+```
 
-- **GitHub**: [Bharath S J](https://github.com/Bharath-S-J)  
-  Explore my repositories and projects.
+---
 
-- **LinkedIn**: [Bharath S J](https://www.linkedin.com/in/bharathsj)  
-  Let's connect and discuss potential opportunities.
+## 🌐 Live Demo
 
-- **Portfolio**: [Portfolio Website](https://bharathsjweb.vercel.app/)  
-  Check out my work and projects.
+[**Try Task Master**](https://task-master-jade-beta.vercel.app/)
+
+---
