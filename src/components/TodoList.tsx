@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   collection,
@@ -20,9 +20,18 @@ const TodoList = () => {
   const [todos, setTodos] = useState<Todo[]>([]);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  const [reminderAt, setReminderAt] = useState("");
+  const [reminderError, setReminderError] = useState("");
+
   const [editingTodo, setEditingTodo] = useState<string | null>(null);
   const [editTitle, setEditTitle] = useState("");
   const [editDescription, setEditDescription] = useState("");
+  const [editReminderAt, setEditReminderAt] = useState("");
+  const [editReminderError, setEditReminderError] = useState("");
+
+  const notifiedSet = useRef<Set<string>>(new Set()); // Holds todo IDs
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -34,10 +43,14 @@ const TodoList = () => {
     );
 
     const unsubscribe = onSnapshot(q, (querySnapshot) => {
-      const todosData = querySnapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      })) as Todo[];
+      const todosData = querySnapshot.docs.map((doc) => {
+        const data = doc.data();
+        return {
+          id: doc.id,
+          ...data,
+          reminderAt: data.reminderAt?.toDate?.() || null,
+        };
+      }) as Todo[];
 
       setTodos(todosData);
     });
@@ -65,10 +78,19 @@ const TodoList = () => {
 
         for (const document of querySnapshot.docs) {
           const data = document.data();
+          const updates: Partial<{ status: string; reminderAt: any }> = {};
+
           if (!data.status) {
+            updates.status = "not_started";
+          }
+          if (data.reminderAt === undefined) {
+            updates.reminderAt = null; // or a Firestore timestamp if you want a default reminder
+          }
+
+          if (Object.keys(updates).length > 0) {
             const todoDocRef = doc(db, "todos", document.id);
-            await updateDoc(todoDocRef, { status: "not_started" });
-            console.log(`Updated todo with id ${document.id}`);
+            await updateDoc(todoDocRef, updates);
+            console.log(`Updated todo with id ${document.id} with`, updates);
           }
         }
 
@@ -80,7 +102,31 @@ const TodoList = () => {
     };
 
     runBatchUpdateOnce();
-  }, []); // run once on mount
+  }, []);
+
+  useEffect(() => {
+    audioRef.current = new Audio("/reminder.mp3");
+  }, []);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      todos.forEach((todo) => {
+        if (!todo.reminderAt || notifiedSet.current.has(todo.id)) return;
+
+        const timeDiff = new Date(todo.reminderAt).getTime() - Date.now();
+
+        if (timeDiff <= 60000 && timeDiff > 0) {
+          audioRef.current?.play().catch((err) => {
+            console.error("Audio play failed:", err);
+          });
+          alert(`Reminder: ${todo.title}`);
+          notifiedSet.current.add(todo.id);
+        }
+      });
+    }, 10000);
+
+    return () => clearInterval(interval);
+  }, [todos]);
 
   const fetchTodos = async () => {
     if (!auth.currentUser) return;
@@ -92,10 +138,14 @@ const TodoList = () => {
       );
 
       const querySnapshot = await getDocs(q);
-      const todosData = querySnapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      })) as Todo[];
+      const todosData = querySnapshot.docs.map((doc) => {
+        const data = doc.data();
+        return {
+          id: doc.id,
+          ...data,
+          reminderAt: data.reminderAt?.toDate() || null,
+        };
+      }) as Todo[];
 
       setTodos(todosData);
     } catch (error) {
@@ -105,7 +155,7 @@ const TodoList = () => {
 
   const addTodo = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title.trim() || !auth.currentUser) return;
+    if (!title.trim() || !auth.currentUser || reminderError) return;
 
     try {
       const todoRef = collection(db, "todos");
@@ -114,12 +164,14 @@ const TodoList = () => {
         description,
         status: "not_started",
         createdAt: new Date(),
+        reminderAt: reminderAt ? new Date(reminderAt) : null,
         userId: auth.currentUser.uid,
       });
 
       setTitle("");
       setDescription("");
-      await fetchTodos();
+      setReminderAt("");
+      setReminderError("");
     } catch (error) {
       console.error("Error adding todo:", error);
     }
@@ -129,25 +181,32 @@ const TodoList = () => {
     setEditingTodo(todo.id);
     setEditTitle(todo.title);
     setEditDescription(todo.description);
+    setEditReminderAt(
+      todo.reminderAt
+        ? new Date(todo.reminderAt).toISOString().slice(0, 16)
+        : ""
+    );
+    setEditReminderError("");
   };
 
   const cancelEditing = () => {
     setEditingTodo(null);
     setEditTitle("");
     setEditDescription("");
+    setEditReminderAt("");
   };
 
   const saveTodoEdit = async (todoId: string) => {
-    if (!auth.currentUser || !editTitle.trim()) return;
+    if (!auth.currentUser || !editTitle.trim() || editReminderError) return;
 
     try {
       const todoRef = doc(db, "todos", todoId);
       await updateDoc(todoRef, {
         title: editTitle,
         description: editDescription,
+        reminderAt: editReminderAt ? new Date(editReminderAt) : null,
       });
       setEditingTodo(null);
-      await fetchTodos();
     } catch (error) {
       console.error("Error updating todo:", error);
     }
@@ -175,7 +234,6 @@ const TodoList = () => {
     try {
       const todoRef = doc(db, "todos", todo.id);
       await updateDoc(todoRef, { status: newStatus });
-      await fetchTodos();
     } catch (error) {
       console.error("Error updating status:", error);
     }
@@ -186,7 +244,6 @@ const TodoList = () => {
 
     try {
       await deleteDoc(doc(db, "todos", id));
-      await fetchTodos();
     } catch (error) {
       console.error("Error deleting todo:", error);
     }
@@ -229,7 +286,29 @@ const TodoList = () => {
               rows={3}
             />
           </div>
-          <button type="submit" className="btn btn-primary">
+          <div className="form-group">
+            <label htmlFor="reminder">Reminder Time (Optional)</label>
+            <input
+              type="datetime-local"
+              id="reminder"
+              value={reminderAt}
+              onChange={(e) => {
+                const val = e.target.value;
+                setReminderAt(val);
+                if (val && new Date(val) < new Date()) {
+                  setReminderError("Reminder must be in the future.");
+                } else {
+                  setReminderError("");
+                }
+              }}
+            />
+            {reminderError && <p className="error-text">{reminderError}</p>}
+          </div>
+          <button
+            type="submit"
+            className="btn btn-primary"
+            disabled={reminderError !== ""}
+          >
             Add Todo
           </button>
         </form>
@@ -256,14 +335,41 @@ const TodoList = () => {
                     rows={3}
                     className="edit-textarea"
                   />
+                  <div className="form-group">
+                    <label htmlFor="editReminder">
+                      Reminder Time (Optional)
+                    </label>
+                    <input
+                      type="datetime-local"
+                      id="editReminder"
+                      value={editReminderAt}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setEditReminderAt(val);
+                        if (val && new Date(val) < new Date()) {
+                          setEditReminderError(
+                            "Reminder must be in the future."
+                          );
+                        } else {
+                          setEditReminderError("");
+                        }
+                      }}
+                      className="edit-input"
+                    />
+                    {editReminderError && (
+                      <p className="error-text">{editReminderError}</p>
+                    )}
+                  </div>
                   <div className="todo-actions">
                     <button
                       onClick={() => saveTodoEdit(todo.id)}
                       className="btn btn-success"
+                      disabled={editReminderError !== "" || !editTitle.trim()}
                     >
                       <Save size={16} />
                       Save
                     </button>
+
                     <button onClick={cancelEditing} className="btn btn-danger">
                       <X size={16} />
                       Cancel
@@ -272,12 +378,25 @@ const TodoList = () => {
                 </div>
               ) : (
                 <>
-                     <h3 className={`todo-title todo-text-status-${todo.status || "not_started"}`}>
-    {todo.title}
-  </h3>
-  <p className={`todo-description todo-text-status-${todo.status || "not_started"}`}>
-    {todo.description}
-  </p>
+                  <h3
+                    className={`todo-title todo-text-status-${
+                      todo.status || "not_started"
+                    }`}
+                  >
+                    {todo.title}
+                  </h3>
+                  <p
+                    className={`todo-description todo-text-status-${
+                      todo.status || "not_started"
+                    }`}
+                  >
+                    {todo.description}
+                  </p>
+                  {todo.reminderAt && (
+                    <p className="todo-reminder">
+                      Reminder: {todo.reminderAt.toLocaleString()}
+                    </p>
+                  )}
                   <div className="todo-actions">
                     <button
                       onClick={() => cycleStatus(todo)}
