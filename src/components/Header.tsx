@@ -11,6 +11,7 @@ const Header: React.FC<HeaderProps> = ({ userName, onLogout }) => {
     <header className="header">
       <div className="header-content">
         <h1 className="header-title">Task Master</h1>
+        <h4 >🚫 Email reminders are currently disabled. Backend is not deployed due to free-tier mail limits.</h4>
         <div className="user-info">
           <div className="user-name">
             <User size={20} />

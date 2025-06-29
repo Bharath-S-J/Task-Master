@@ -17,6 +17,7 @@ const LandingPage = () => {
       <header className="header">
         <div className="header-content">
           <h1 className="header-title">Task Master</h1>
+          <h4 >🚫 Email reminders are currently disabled. Backend is not deployed due to free-tier mail limits.</h4>
           <div className="auth-buttons">
             <button onClick={() => navigate('/auth')} className="btn btn-primary">
               Login / Register

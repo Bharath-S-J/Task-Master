@@ -329,7 +329,7 @@ body {
 
 /* Title text styles */
 .todo-text-status-not_started {
-  color: gray;
+  color: rgb(0, 0, 0);
   font-weight: normal;
   text-decoration: none;
   opacity: 1;

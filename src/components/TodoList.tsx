@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import { format } from 'date-fns';
 import {
   collection,
   addDoc,
@@ -34,29 +35,49 @@ const TodoList = () => {
 
   const navigate = useNavigate();
 
-  useEffect(() => {
-    if (!auth.currentUser) return;
+useEffect(() => {
+  if (!auth.currentUser) return;
 
-    const q = query(
-      collection(db, "todos"),
-      where("userId", "==", auth.currentUser.uid)
-    );
+  const q = query(
+    collection(db, "todos"),
+    where("userId", "==", auth.currentUser.uid)
+  );
 
-    const unsubscribe = onSnapshot(q, (querySnapshot) => {
-      const todosData = querySnapshot.docs.map((doc) => {
-        const data = doc.data();
-        return {
-          id: doc.id,
-          ...data,
-          reminderAt: data.reminderAt?.toDate?.() || null,
-        };
-      }) as Todo[];
+  const unsubscribe = onSnapshot(q, (querySnapshot) => {
+    const todosData = querySnapshot.docs.map((doc) => {
+      const data = doc.data();
+      return {
+        id: doc.id,
+        ...data,
+        reminderAt: data.reminderAt?.toDate?.() || null,
+        createdAt: data.createdAt?.toDate?.() || new Date(),
+      };
+    }) as Todo[];
 
-      setTodos(todosData);
+    // Sort based on status and reminderAt
+    const sortedTodos = todosData.sort((a, b) => {
+      const statusOrder = {
+        "in_progress": 0,
+        "not_started": 1,
+        "completed": 2,
+      };
+
+      const statusCompare = statusOrder[a.status] - statusOrder[b.status];
+      if (statusCompare !== 0) return statusCompare;
+
+      // If same status, sort by reminderAt (nulls last)
+      const aTime = a.reminderAt ? a.reminderAt.getTime() : Infinity;
+      const bTime = b.reminderAt ? b.reminderAt.getTime() : Infinity;
+
+      return aTime - bTime;
     });
 
-    return () => unsubscribe(); // cleanup on unmount
-  }, []);
+    setTodos(sortedTodos);
+  });
+
+  return unsubscribe;
+}, []);
+
 
   useEffect(() => {
     const runBatchUpdateOnce = async () => {
@@ -378,13 +399,13 @@ const TodoList = () => {
                 </div>
               ) : (
                 <>
-                  <h3
+                  <h1
                     className={`todo-title todo-text-status-${
                       todo.status || "not_started"
                     }`}
                   >
                     {todo.title}
-                  </h3>
+                  </h1>
                   <p
                     className={`todo-description todo-text-status-${
                       todo.status || "not_started"
@@ -394,7 +415,8 @@ const TodoList = () => {
                   </p>
                   {todo.reminderAt && (
                     <p className="todo-reminder">
-                      Reminder: {todo.reminderAt.toLocaleString()}
+                      Reminder:{" "}
+                      {format(new Date(todo.reminderAt), "dd:MM:yyyy HH:mm")}
                     </p>
                   )}
                   <div className="todo-actions">
